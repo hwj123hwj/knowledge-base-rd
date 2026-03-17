@@ -17,6 +17,7 @@ DB_PASSWORD = os.getenv("DB_PASSWORD", "bili123456")
 DB_NAME = os.getenv("DB_NAME", "bilibili")
 SILICONFLOW_API_KEY = os.getenv("SILICONFLOW_API_KEY")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "BAAI/bge-m3")
+VECTOR_DIMENSION = 1024  # Explicitly set vector dimension for SiliconFlow BGE-M3
 
 def get_embedding(text: str) -> List[float]:
     """获取查询向量"""
@@ -31,7 +32,13 @@ def get_embedding(text: str) -> List[float]:
     }
     response = requests.post(url, headers=headers, json=payload)
     response.raise_for_status()
-    return response.json()["data"][0]["embedding"]
+    embedding = response.json()["data"][0]["embedding"]
+    
+    # Verify vector dimension
+    if len(embedding) != VECTOR_DIMENSION:
+        print(f"Warning: Expected {VECTOR_DIMENSION} dimensions, but got {len(embedding)}")
+        
+    return embedding
 
 def search_knowledge(query: str, mode: str = "hybrid", limit: int = 10) -> List[Dict]:
     """执行混合搜索"""

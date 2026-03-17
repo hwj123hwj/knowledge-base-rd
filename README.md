@@ -21,10 +21,30 @@
 
 | 组件 | 技术选型 |
 |------|----------|
-| 数据库 | PostgreSQL 15 + pgvector |
-| 向量维度 | 1536 (OpenAI/SiliconFlow 兼容) |
+| 数据库 | PostgreSQL 17 + pgvector |
+| 向量维度 | 1024 (SiliconFlow BGE-M3) |
 | Embedding API | SiliconFlow |
 | 技能框架 | OpenClaw AgentSkills |
+
+## 快速开始
+
+### 1. 环境准备
+
+推荐使用虚拟环境运行本项目：
+
+```bash
+# 创建虚拟环境
+python3 -m venv venv
+
+# 激活虚拟环境 (Linux/macOS)
+source venv/bin/activate
+
+# 激活虚拟环境 (Windows)
+# venv\Scripts\activate
+
+# 安装依赖
+pip install -r requirements.txt
+```
 
 ## 当前状态
 
