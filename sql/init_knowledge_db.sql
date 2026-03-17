@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS knowledge_items (
     title VARCHAR(500),                         -- 标题
     content TEXT,                               -- 全文内容
     summary TEXT,                               -- AI 摘要
-    embedding vector(1536),                     -- OpenAI embedding 向量 (1536维)
+    embedding vector(1024),                     -- SiliconFlow BGE-M3 embedding 向量 (1024维)
     metadata JSONB DEFAULT '{}',                -- 平台特有字段，灵活扩展
     created_at TIMESTAMPTZ DEFAULT NOW(),       -- 入库时间
     updated_at TIMESTAMPTZ DEFAULT NOW()        -- 更新时间
