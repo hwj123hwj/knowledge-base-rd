@@ -119,9 +119,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # 提取 Embedding
+    # 提取 Embedding：优先用 summary（更浓缩），fallback 到 content 前 2000 字
     print(f"Generating embedding for: {args.title}...", file=sys.stderr)
-    embedding = get_embedding(f"{args.title}\n{args.content[:500]}")
+    embed_text = args.summary if args.summary else args.content[:2000]
+    embedding = get_embedding(f"{args.title}\n{embed_text}")
 
     # 解析数据
     data = {

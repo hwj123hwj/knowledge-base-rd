@@ -58,6 +58,7 @@ def search_knowledge(query: str, mode: str = "hybrid", limit: int = 10) -> List[
             cur.execute("""
                 SELECT
                     id, source_type, source_url, title, summary,
+                    LEFT(content, 500) as content_preview,
                     1 - (embedding <=> %s::vector) as similarity,
                     created_at
                 FROM knowledge_items
@@ -73,6 +74,7 @@ def search_knowledge(query: str, mode: str = "hybrid", limit: int = 10) -> List[
             cur.execute("""
                 SELECT
                     id, source_type, source_url, title, summary,
+                    LEFT(content, 500) as content_preview,
                     1.0 as similarity,
                     created_at
                 FROM knowledge_items
