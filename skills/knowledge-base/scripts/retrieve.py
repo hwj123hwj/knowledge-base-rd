@@ -33,11 +33,11 @@ def get_embedding(text: str) -> List[float]:
     response = requests.post(url, headers=headers, json=payload)
     response.raise_for_status()
     embedding = response.json()["data"][0]["embedding"]
-    
+
     # Verify vector dimension
     if len(embedding) != VECTOR_DIMENSION:
         print(f"Warning: Expected {VECTOR_DIMENSION} dimensions, but got {len(embedding)}")
-        
+
     return embedding
 
 def search_knowledge(query: str, mode: str = "hybrid", limit: int = 10) -> List[Dict]:
@@ -49,15 +49,15 @@ def search_knowledge(query: str, mode: str = "hybrid", limit: int = 10) -> List[
     )
     try:
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        
+
         # 1. 向量搜索
         if mode in ["vector", "hybrid"]:
             embedding = get_embedding(query)
-            
+
             # 使用 cosine_ops 进行向量检索 (pgvector)
             cur.execute("""
-                SELECT 
-                    id, source_type, source_url, title, summary, 
+                SELECT
+                    id, source_type, source_url, title, summary,
                     1 - (embedding <=> %s::vector) as similarity,
                     created_at
                 FROM knowledge_items
@@ -67,12 +67,12 @@ def search_knowledge(query: str, mode: str = "hybrid", limit: int = 10) -> List[
             vector_results = cur.fetchall()
             if mode == "vector":
                 return vector_results
-            
+
         # 2. 关键词搜索
         if mode in ["keyword", "hybrid"]:
             cur.execute("""
-                SELECT 
-                    id, source_type, source_url, title, summary, 
+                SELECT
+                    id, source_type, source_url, title, summary,
                     1.0 as similarity,
                     created_at
                 FROM knowledge_items
@@ -83,24 +83,24 @@ def search_knowledge(query: str, mode: str = "hybrid", limit: int = 10) -> List[
             keyword_results = cur.fetchall()
             if mode == "keyword":
                 return keyword_results
-                
+
         # 3. 混合去重并加权
         all_results = {}
         for r in vector_results:
             all_results[r['id']] = r
             all_results[r['id']]['score'] = r['similarity'] * 0.7  # 向量权重 0.7
-            
+
         for r in keyword_results:
             if r['id'] in all_results:
                 all_results[r['id']]['score'] += 0.3  # 命中了关键词 +0.3
             else:
                 all_results[r['id']] = r
                 all_results[r['id']]['score'] = 0.5  # 纯关键词加分
-                
+
         # 按得分排序
         sorted_results = sorted(all_results.values(), key=lambda x: x['score'], reverse=True)
         return sorted_results[:limit]
-        
+
     finally:
         conn.close()
 
@@ -109,8 +109,8 @@ if __name__ == "__main__":
     parser.add_argument("--query", required=True, help="Search query")
     parser.add_argument("--mode", default="hybrid", choices=["keyword", "vector", "hybrid"])
     parser.add_argument("--limit", type=int, default=10)
-    
+
     args = parser.parse_args()
-    
+
     results = search_knowledge(args.query, args.mode, args.limit)
-    print(json.dumps({"results": results, "total": len(results)}, default=str))
+    print(json.dumps({"results": [dict(r) for r in results], "total": len(results)}, default=str))

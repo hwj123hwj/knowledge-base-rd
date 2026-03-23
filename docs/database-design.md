@@ -5,8 +5,8 @@
 | 组件 | 选型 | 说明 |
 |------|------|------|
 | 数据库 | PostgreSQL 15 | 成熟稳定，扩展丰富 |
-| 向量扩展 | pgvector | 开源，性能好，兼容 OpenAI embedding |
-| Embedding | vector(1536) | OpenAI/SiliconFlow 兼容维度 |
+| 向量扩展 | pgvector | 开源，性能好，兼容 SiliconFlow embedding |
+| Embedding | vector(1024) | SiliconFlow BGE-M3 维度 |
 
 ## 2. 连接信息
 
@@ -33,7 +33,7 @@ Database: bilibili
 | title | VARCHAR(500) | 标题 |
 | content | TEXT | 全文内容 |
 | summary | TEXT | AI 摘要 |
-| embedding | vector(1536) | 向量 |
+| embedding | vector(1024) | 向量（SiliconFlow BGE-M3）|
 | metadata | JSONB | 平台特有字段 |
 | created_at | TIMESTAMPTZ | 入库时间 |
 | updated_at | TIMESTAMPTZ | 更新时间 |
@@ -97,16 +97,16 @@ Database: bilibili
 
 ```sql
 -- 唯一索引：防止重复入库
-CREATE UNIQUE INDEX idx_knowledge_items_unique_source 
+CREATE UNIQUE INDEX idx_knowledge_items_unique_source
 ON knowledge_items(source_type, source_id);
 
 -- 向量索引：语义搜索
-CREATE INDEX idx_knowledge_items_embedding 
-ON knowledge_items USING ivfflat (embedding vector_cosine_ops) 
+CREATE INDEX idx_knowledge_items_embedding
+ON knowledge_items USING ivfflat (embedding vector_cosine_ops)
 WITH (lists = 100);
 
 -- 时间索引：按时间排序
-CREATE INDEX idx_knowledge_items_created_at 
+CREATE INDEX idx_knowledge_items_created_at
 ON knowledge_items(created_at DESC);
 
 -- 标签索引
@@ -122,7 +122,7 @@ CREATE INDEX idx_tags_category ON tags(category);
 
 ```sql
 -- 搜索与查询向量最相似的 10 条内容
-SELECT id, title, summary, 
+SELECT id, title, summary,
        1 - (embedding <=> '[0.1, 0.2, ...]'::vector) as similarity
 FROM knowledge_items
 ORDER BY embedding <=> '[0.1, 0.2, ...]'::vector
