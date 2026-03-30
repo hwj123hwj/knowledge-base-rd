@@ -139,3 +139,38 @@ AI:
 - [ ] 多用户支持
 - [ ] 知识协作共享
 - [ ] 移动端访问
+### 2.5 豆包对话入库（2026-03-30 新增）
+
+**场景：** 用户每天用豆包学习 Java/Go 等技术，产生大量对话，希望沉淀到知识库。
+
+**来源类型：** `doubao`
+
+**获取方式：** AI 助手通过 headless 浏览器抓取豆包帖子页面内容（豆包帖子不需要登录即可访问）。
+
+**URL 模式：** `doubao.com/thread/{thread_id}`
+
+**metadata 字段：**
+```json
+{
+  "thread_id": "ab1c4d29df9d7",
+  "created_date": "2026-03-30",
+  "topics": ["Spring", "SpringBoot", "IoC", "Starter"],
+  "rounds": 24
+}
+```
+
+**入库流程：**
+1. 用户提供豆包链接
+2. AI 助手用浏览器抓取完整对话内容
+3. 调用 knowledge_save 入库（source_type=doubao, source_id=thread_id）
+4. 自动提取话题标签
+
+**URL 类型识别扩展：**
+| URL 模式 | 来源类型 |
+|----------|----------|
+| `doubao.com/thread/` | doubao |
+
+**待实现：**
+- [ ] knowledge_save_from_url.py 增加 doubao URL 识别
+- [ ] AI 助手浏览器抓取逻辑（已有，需集成）
+- [ ] 自动从对话内容提取话题标签
